@@ -146,6 +146,81 @@ public:
         return ans == INF ? -1 : ans;
     }
 };
+
+day 8 
+class Solution {
+public:
+    vector<string> maxNumOfSubstrings(string s) {
+        vector<int> first(26, -1);
+        vector<int> last(26, -1);
+
+        // First and last occurrence
+        for (int i = 0; i < s.size(); i++) {
+            int c = s[i] - 'a';
+
+            if (first[c] == -1)
+                first[c] = i;
+
+            last[c] = i;
+        }
+
+        // Store valid intervals {start, end}
+        vector<pair<int, int>> intervals;
+
+        for (int i = 0; i < s.size(); i++) {
+            int c = s[i] - 'a';
+
+            // Only start from first occurrence
+            if (first[c] != i)
+                continue;
+
+            int end = last[c];
+            bool valid = true;
+
+            for (int j = i; j <= end; j++) {
+                int x = s[j] - 'a';
+
+                // This character appeared before i,
+                // so we cannot make a valid substring
+                if (first[x] < i) {
+                    valid = false;
+                    break;
+                }
+
+                // Need to include all occurrences of this character
+                end = max(end, last[x]);
+            }
+
+            if (valid)
+                intervals.push_back({i, end});
+        }
+
+        // Earliest ending interval first.
+        // If same end, later start = shorter substring.
+        sort(intervals.begin(), intervals.end(),
+             [](pair<int, int> a, pair<int, int> b) {
+                 if (a.second != b.second)
+                     return a.second < b.second;
+
+                 return a.first > b.first;
+             });
+
+        vector<string> ans;
+        int prevEnd = -1;
+
+        for (auto interval : intervals) {
+            int start = interval.first;
+            int end = interval.second;
+
+            if (start > prevEnd) {
+                ans.push_back(s.substr(start, end - start + 1));
+                prevEnd = end;
+            }
+        }
+
+        return ans;
+    }
+};
             }
         }
 
