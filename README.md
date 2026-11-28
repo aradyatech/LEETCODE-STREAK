@@ -831,3 +831,65 @@ public:
 };
 
 
+class Solution {
+public:
+    int maximumSaleItems(vector<vector<int>>& items, int budget) {
+        int n = items.size();
+
+        vector<int> freq(n + 1, 0);
+
+        int minPrice = INT_MAX;
+
+        // Count frequencies of factors
+        for (auto &it : items) {
+            freq[it[0]]++;
+            minPrice = min(minPrice, it[1]);
+        }
+
+        // Count all items whose factors are multiples
+        vector<int> gain(n + 1, 0);
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = i; j <= n; j += i) {
+                gain[i] += freq[j];
+            }
+            gain[i]--;
+        }
+
+        // Sort items by price
+        sort(items.begin(), items.end(),
+             [](const vector<int>& a, const vector<int>& b) {
+                 return a[1] < b[1];
+             });
+
+        long long ans = 0;
+        long long rem = budget;
+
+        // Buy profitable copies (each gives 2 items)
+        for (auto &it : items) {
+            int factor = it[0];
+            int price = it[1];
+
+            // Two cheapest normal copies are better
+            if (price >= 2LL * minPrice)
+                break;
+
+            if (gain[factor] <= 0)
+                continue;
+
+            long long take = min(
+                (long long)gain[factor],
+                rem / price
+            );
+
+            ans += 2 * take;
+            rem -= take * price;
+        }
+
+        // Spend remaining budget on cheapest items
+        ans += rem / minPrice;
+
+        return (int)ans;
+    }
+};
+
